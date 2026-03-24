@@ -13,6 +13,6 @@ resource "cloudflare_record" "record" {
   name    = each.key
   proxied = var.cloudflare_record_proxied
   type    = "A"
-  value   = digitalocean_droplet.droplet.ipv4_address
+  content = digitalocean_droplet.droplet.ipv4_address
   zone_id = data.cloudflare_zone.zone[each.key].id
 }
