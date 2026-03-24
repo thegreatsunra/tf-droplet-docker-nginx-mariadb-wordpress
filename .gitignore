@@ -90,3 +90,5 @@ terraform.rc
 .env
 dns.json
 sites-available.json
+ansible/hosts/*/host.yml
+ansible/playbooks/files/docker.env

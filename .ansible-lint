@@ -1,0 +1,3 @@
+skip_list:
+  - command-instead-of-module  # intentional: no community collections per project policy
+  - risky-shell-pipe           # shell pipes use creates: for idempotency
