@@ -1,5 +1,5 @@
 variable "cloudflare_record_proxied" {
-  type = bool
+  type    = bool
   default = false
 }
 
