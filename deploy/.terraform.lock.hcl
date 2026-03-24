@@ -3,7 +3,7 @@
 
 provider "registry.opentofu.org/cloudflare/cloudflare" {
   version     = "4.52.6"
-  constraints = "~> 4.37"
+  constraints = "~> 4.52"
   hashes = [
     "h1:VsCiev1hz+lnShdcLvP+3Z5weWcRe8dAwYHV7aGS+IA=",
     "zh:3b0f7f666a9c2c2dddb586484c88b67504c94b92a4d71b1542c52f9e7c42b80c",

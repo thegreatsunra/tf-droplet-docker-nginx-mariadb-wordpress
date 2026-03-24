@@ -1,54 +1,62 @@
-# Digital Ocean Droplet + WordPress/MariaDB/Nginx in Docker + Certbot TLS + Cloudflare DNS 
+# DigitalOcean Droplet + WordPress/MariaDB/Nginx in Docker + Certbot TLS + Cloudflare DNS
 
 > Together at last
 
 ## Getting started
 
-1. Generate and add your Digital Ocean and Cloudflare API tokens
-1. Create `.env` files based on the `.env.example` files and update values
+1. Generate your DigitalOcean and Cloudflare API tokens
+1. Create `deploy/.env` based on `deploy/.env.example` and fill in values
+1. Create `deploy/dns.json` and `deploy/sites-available.json` from their `.example` counterparts
+1. Create `ansible/hosts/<project>/host.yml` based on `ansible/hosts/kafka/host.yml.example`
 
-Then, deploy:
+Variables are passed to OpenTofu via `TF_VAR_*` environment variables. The Taskfile loads `deploy/.env` automatically — always use `task` rather than invoking `tofu` directly.
+
+### 1. Provision infrastructure
 
 ```shell
 cd deploy
 task tf-init tf-plan tf-apply
 ```
 
-Wait until done, and then SSH into your server based on the outputted IP value from Terraform.
+This creates the droplet and DNS records, and writes rendered config files to `ansible/playbooks/files/rendered/` for Ansible to deploy.
+
+Wait for cloud-init to finish and the droplet to reboot, then confirm SSH is available:
 
 ```shell
 ssh <username>@<droplet_ip_address>
 ```
 
-You'll be disconnected when the server finishes running the cloud-init scripts, but that's no reason not to start poking around to see if it all worked.
+### 2. Provision the server
+
+Copy `ansible/hosts/kafka/host.yml.example` to `ansible/hosts/<project>/host.yml` and fill in the droplet IP and username.
+
+Then run Ansible (from `deploy/`, where the Taskfile and `.env` live):
 
 ```shell
-## check cloud-init logs
-sudo cat /var/log/cloud-init-output.log
+task ansible-provision CONFIG=../ansible/hosts/<project>/host.yml
+```
 
-## WAIT UNTIL THE DROPLET REBOOTS BEFORE CONTINUING
+Ansible will install packages, harden SSH (moving it to port 4444), configure UFW, install Docker, and deploy the WordPress stack.
 
-## start the containers for the first time
-cd ~/docker && sudo docker compose up -d
+After the first run, update `port` in your `host.yml` from `22` to `4444`.
 
-## check status of containers
-## nginx, wordpress, and mariadb should be running
-## certbot will have run and quit
-sudo docker ps
+### 3. Enable SSL
 
-## see if certbot successfully validated your domain and mounted into the nginx container
-## there should be a folder named after your domain in this folder
+Once the stack is running, SSH in and check certbot validated your domain:
+
+```shell
+ssh -p 4444 <username>@<droplet_ip_address>
+cd ~/docker
+
+## check certbot created a cert folder for your domain
 sudo docker compose exec nginx ls -la /etc/letsencrypt/live
 
-## edit ~/docker/docker-compose.yml and:
-## remove --staging and replace with --force-renewal
-## then, re-run certbot to really generate certs for your domain
+## re-run certbot with --force-renewal to get real certs
 sudo docker compose up --force-recreate -d --no-deps certbot
 
-## then, comment out the HTTP stuff and un-comment the HTTPS stuff in nginx default.conf
-
-## then restart the containers
-sudo docker compose restart -d
+## then comment out the HTTP block and un-comment the HTTPS block in nginx default.conf
+## then restart containers
+sudo docker compose restart
 ```
 
 ## Maintenance
@@ -61,6 +69,7 @@ cd ~/docker && sudo docker compose up -d --force-recreate
 ## Destroying what you've made
 
 ```shell
+cd deploy
 task tf-destroy
 ```
 

@@ -5,26 +5,26 @@ dotenv: ['.env']
 tasks:
   tf-apply:
     cmds:
-      - terraform apply
+      - tofu apply
   tf-destroy:
     cmds:
-      - terraform destroy
+      - tofu destroy
   tf-fmt:
     cmds:
-      - terraform fmt .
+      - tofu fmt .
   tf-init:
     cmds:
-      - terraform init
+      - tofu init
   tf-plan:
     cmds:
-      - terraform plan
+      - tofu plan
   tf-providers-lock:
     cmds:
       - |
-        terraform providers lock \
+        tofu providers lock \
         -platform=darwin_amd64 \
         -platform=darwin_arm64 \
         -platform=linux_amd64
   tf-validate:
     cmds:
-      - terraform validate
+      - tofu validate
