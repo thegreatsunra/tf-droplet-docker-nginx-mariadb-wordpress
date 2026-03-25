@@ -23,8 +23,9 @@ server {
 	listen      [::]:80 ;
 
 	## un-comment once SSL is configured
-#	listen 443 ssl http2 ;
-#	listen [::]:443 ssl http2 ;
+#	listen 443 ssl ;
+#	listen [::]:443 ssl ;
+#	http2 on ;
 
 	server_name {{ site_domain_name }} ;
 	set         $base /var/www/html ;
