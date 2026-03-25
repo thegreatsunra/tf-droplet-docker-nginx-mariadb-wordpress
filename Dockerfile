@@ -33,6 +33,6 @@ RUN git init && pre-commit install-hooks
 COPY . .
 
 # Stage all files so pre-commit can discover them, and ensure scripts are executable
-RUN chmod +x ansible/run-playbook.bash ansible/migrate-databases.bash && git add -A
+RUN chmod +x ansible/run-playbook.bash scripts/migrate-databases.bash scripts/migrate-wordpress.bash && git add -A
 
 CMD ["sh", "-c", "task test && task lint"]
