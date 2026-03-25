@@ -5,7 +5,7 @@
   gather_facts: true
 
   vars:
-    sites_available: "{{ lookup('file', playbook_dir + '/../../tf/sites-available.json') | from_json }}"
+    sites_available: "{{ lookup('file', playbook_dir + '/../sites-available.json') | from_json }}"
     wordpress_prefix: "wp_"
     database_prefix: "db_"
 
