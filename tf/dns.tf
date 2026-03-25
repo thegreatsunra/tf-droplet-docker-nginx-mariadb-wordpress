@@ -11,9 +11,9 @@ resource "cloudflare_record" "record" {
   for_each = local.dns
 
   allow_overwrite = var.cloudflare_record_allow_overwrite
-  content = digitalocean_droplet.droplet.ipv4_address
-  name    = each.key
-  proxied = var.cloudflare_record_proxied
-  type    = "A"
-  zone_id = data.cloudflare_zone.zone[each.key].id
+  content         = digitalocean_droplet.droplet.ipv4_address
+  name            = each.key
+  proxied         = var.cloudflare_record_proxied
+  type            = "A"
+  zone_id         = data.cloudflare_zone.zone[each.key].id
 }
