@@ -31,6 +31,17 @@ services:
       - WORDPRESS_DB_NAME={{ wordpress_prefix }}{{ database_prefix }}{{ site_key }}
       - WORDPRESS_DB_PASSWORD=$MYSQL_PASSWORD_{{ site_key }}
       - WORDPRESS_DB_USER=$MYSQL_USER_{{ site_key }}
+{% if site.multisite %}
+      - |
+        WORDPRESS_CONFIG_EXTRA=
+        define('WP_ALLOW_MULTISITE', true);
+        define('MULTISITE', true);
+        define('SUBDOMAIN_INSTALL', false);
+        define('DOMAIN_CURRENT_SITE', '{{ site.domain }}');
+        define('PATH_CURRENT_SITE', '/');
+        define('SITE_ID_CURRENT_SITE', 1);
+        define('BLOG_ID_CURRENT_SITE', 1);
+{% endif %}
     volumes:
       - {{ wordpress_prefix }}{{ site_key }}:/var/www/html
     deploy:
