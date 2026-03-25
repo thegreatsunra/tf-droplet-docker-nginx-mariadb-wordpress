@@ -7,10 +7,16 @@
   args:
     creates: /usr/share/keyrings/docker.gpg
 
+- name: Get dpkg architecture
+  ansible.builtin.command:
+    cmd: dpkg --print-architecture
+  register: dpkg_architecture
+  changed_when: false
+
 - name: Add Docker apt repository
   ansible.builtin.apt_repository:
     repo: >-
-      deb [arch={{ ansible_facts['architecture'] }}
+      deb [arch={{ dpkg_architecture.stdout }}
       signed-by=/usr/share/keyrings/docker.gpg]
       https://download.docker.com/linux/{{ ansible_facts['distribution'] | lower }}
       {{ ansible_facts['distribution_release'] }} stable
