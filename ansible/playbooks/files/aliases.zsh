@@ -1,0 +1,5 @@
+alias aliases="pico ~/.oh-my-zsh/custom/aliases.zsh"
+alias d="sudo docker"
+alias dc="sudo docker compose --file ~/stuff/docker/docker-compose.yml"
+alias dcup="dc up -d --force-recreate"
+alias updateallthethings="sudo apt update && sudo apt upgrade -y && sudo apt autoremove -y"

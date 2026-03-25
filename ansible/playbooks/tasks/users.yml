@@ -57,8 +57,8 @@
   changed_when: true
 
 - name: Install zsh aliases
-  ansible.builtin.template:
-    src: aliases.zsh.j2
+  ansible.builtin.copy:
+    src: aliases.zsh
     dest: "/home/{{ ssh_user }}/.oh-my-zsh/custom/aliases.zsh"
     owner: "{{ ssh_user }}"
     group: "{{ ssh_user }}"
