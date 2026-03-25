@@ -6,6 +6,7 @@ repos:
         language: system
         entry: shellcheck
         types: [shell]
+        exclude: '\.(j2|zsh)$'
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
@@ -19,6 +20,7 @@ repos:
       - id: check-case-conflict
       - id: check-merge-conflict
       - id: check-shebang-scripts-are-executable
+        exclude: '\.j2$'
       - id: detect-private-key
 
   - repo: https://github.com/adrienverge/yamllint

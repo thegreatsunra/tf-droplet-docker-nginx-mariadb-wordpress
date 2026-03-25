@@ -16,8 +16,8 @@
 
 - name: Render MariaDB init script
   ansible.builtin.template:
-    src: mariadb-init.sh.j2
-    dest: "/home/{{ ssh_user }}/stuff/docker/mariadb/initdb.d/init-wordpress-databases.sh"
+    src: mariadb-init.bash.j2
+    dest: "/home/{{ ssh_user }}/stuff/docker/mariadb/initdb.d/init-wordpress-databases.bash"
     owner: "{{ ssh_user }}"
     group: "{{ ssh_user }}"
     mode: "0755"
