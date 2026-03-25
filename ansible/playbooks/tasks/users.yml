@@ -1,0 +1,89 @@
+---
+- name: Check if Oh My Zsh is installed
+  ansible.builtin.stat:
+    path: "/home/{{ ssh_user }}/.oh-my-zsh"
+  register: oh_my_zsh
+  become: false
+
+- name: Install Oh My Zsh
+  ansible.builtin.shell:
+    cmd: sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+  when: not oh_my_zsh.stat.exists
+  become: false
+  changed_when: true
+
+- name: Install zsh aliases
+  ansible.builtin.template:
+    src: aliases.zsh.j2
+    dest: "/home/{{ ssh_user }}/.oh-my-zsh/custom/aliases.zsh"
+    owner: "{{ ssh_user }}"
+    group: "{{ ssh_user }}"
+    mode: '0644'
+  become: false
+
+- name: Set Oh My Zsh update mode to auto
+  ansible.builtin.lineinfile:
+    path: "/home/{{ ssh_user }}/.zshrc"
+    regexp: "zstyle ':omz:update' mode"
+    line: "zstyle ':omz:update' mode auto"
+  become: false
+
+- name: Set Oh My Zsh update frequency to daily
+  ansible.builtin.lineinfile:
+    path: "/home/{{ ssh_user }}/.zshrc"
+    regexp: "zstyle ':omz:update' frequency"
+    line: "zstyle ':omz:update' frequency 1"
+  become: false
+
+- name: Check if Atuin is installed
+  ansible.builtin.stat:
+    path: "/home/{{ ssh_user }}/.atuin/bin/atuin"
+  register: atuin_bin
+  become: false
+
+- name: Install Atuin binary
+  ansible.builtin.get_url:
+    url: https://setup.atuin.sh
+    dest: /tmp/install-atuin.sh
+    mode: '0755'
+  when: not atuin_bin.stat.exists
+  become: false
+
+- name: Run Atuin binary installer
+  ansible.builtin.command:
+    cmd: /tmp/install-atuin.sh --non-interactive
+  when: not atuin_bin.stat.exists
+  become: false
+  changed_when: true
+
+- name: Create Atuin config directory
+  ansible.builtin.file:
+    path: "/home/{{ ssh_user }}/.config/atuin"
+    state: directory
+    owner: "{{ ssh_user }}"
+    group: "{{ ssh_user }}"
+    mode: '0755'
+  become: false
+
+- name: Configure Atuin
+  ansible.builtin.copy:
+    dest: "/home/{{ ssh_user }}/.config/atuin/config.toml"
+    owner: "{{ ssh_user }}"
+    group: "{{ ssh_user }}"
+    mode: '0644'
+    content: |
+      auto_sync = false
+      sync_frequency = "0"
+  become: false
+
+- name: Import shell history into Atuin
+  ansible.builtin.command:
+    cmd: "/home/{{ ssh_user }}/.atuin/bin/atuin import auto"
+  become: false
+  changed_when: true
+  failed_when: false
+
+- name: Set zsh as default shell
+  ansible.builtin.user:
+    name: "{{ ssh_user }}"
+    shell: /usr/bin/zsh
