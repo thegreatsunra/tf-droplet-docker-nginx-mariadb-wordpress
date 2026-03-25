@@ -88,7 +88,8 @@ terraform.rc
 
 ### Project ###
 .env
-ansible/hosts/*/host.yml
-ansible/sites-available.json
 docker.env
+docs/
+hosts/*/
+!hosts/example/
 tf/dns.json

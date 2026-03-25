@@ -1,6 +1,0 @@
-host: <droplet_ip>
-port: 4444
-user: <username>
-playbook: provision-host.yml
-vars:
-  email_address: <email>
