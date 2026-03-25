@@ -6,8 +6,10 @@
 
 1. Generate your DigitalOcean and Cloudflare API tokens
 1. Create `tf/.env` based on `tf/.env.example` and fill in values
-1. Create `tf/dns.json` and `tf/sites-available.json` from their `.example` counterparts
-1. Create `ansible/hosts/<project>/host.yml` based on `ansible/hosts/kafka/host.yml.example`
+1. Create `tf/dns.json` from `tf/dns.json.example`
+1. Create `ansible/sites-available.json` from `ansible/sites-available.json.example`
+1. Create `ansible/hosts/<project>/host.yml` based on `ansible/hosts/example/host.yml.example`
+1. Create `ansible/playbooks/files/docker.env` based on `ansible/playbooks/files/docker.env.example`
 
 Variables are passed to OpenTofu via `TF_VAR_*` environment variables. The root Taskfile loads `tf/.env` automatically — always use `task` rather than invoking `tofu` directly.
 
@@ -17,23 +19,19 @@ Variables are passed to OpenTofu via `TF_VAR_*` environment variables. The root 
 task tf:init tf:plan tf:apply
 ```
 
-Wait for cloud-init to finish and the droplet to reboot, then confirm SSH is available:
+cloud-init will upgrade packages, install dependencies, harden SSH (port 4444), and configure UFW. Wait for it to finish and the droplet to reboot, then confirm SSH is available:
 
 ```shell
-ssh <username>@<droplet_ip_address>
+ssh -p 4444 <username>@<droplet_ip_address>
 ```
 
 ### 2. Provision the server
 
-Copy `ansible/hosts/kafka/host.yml.example` to `ansible/hosts/<project>/host.yml` and fill in the droplet IP and username.
-
 ```shell
-task tf:ansible-provision CONFIG=ansible/hosts/<project>/host.yml
+bash ansible/run-playbook.bash --config ansible/hosts/<project>/host.yml
 ```
 
-Ansible will install packages, harden SSH (moving it to port 4444), configure UFW, install Docker, and deploy the WordPress stack.
-
-After the first run, update `port` in your `host.yml` from `22` to `4444`.
+Ansible will install Docker and deploy the WordPress stack.
 
 ### 3. Enable SSL
 
@@ -71,4 +69,4 @@ task tf:destroy
 
 The MIT License (MIT)
 
-Copyright (c) 2022 Dane Petersen
+Copyright (c) 2022-2026 Dane Petersen
