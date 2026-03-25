@@ -6,8 +6,21 @@
 
 package_upgrade: true
 packages:
+  - apt-transport-https
+  - ca-certificates
+  - chkrootkit
   - curl
+  - fail2ban
   - git
+  - gnupg
+  - lsb-release
+  - rkhunter
+  - ufw
+  - zsh
+
+timezone: ${timezone}
+
+fqdn: ${droplet_hostname}
 
 users:
   - name: ${username}
@@ -17,6 +30,35 @@ users:
     sudo: ['ALL=(ALL) NOPASSWD:ALL']
     groups: sudo
     shell: /bin/bash
+
+write_files:
+  - path: /etc/ssh/sshd_config.d/99-hardening.conf
+    permissions: '0600'
+    content: |
+      Port 4444
+      PasswordAuthentication no
+      PermitEmptyPasswords no
+      TCPKeepAlive no
+      PermitRootLogin no
+      LogLevel VERBOSE
+      X11Forwarding no
+      AllowTcpForwarding no
+      AllowAgentForwarding no
+      MaxSessions 2
+      MaxAuthTries 2
+      ClientAliveCountMax 2
+      Compression no
+      AllowUsers ${username}
+
+runcmd:
+  - systemctl restart ssh
+  - ufw deny ssh
+  - ufw allow 4444/tcp
+  - ufw allow http
+  - ufw allow https
+  - ufw logging on
+  - ufw --force enable
+  - chattr +i /etc/hostname
 
 power_state:
   mode: reboot
