@@ -39,7 +39,7 @@ Once the stack is running, SSH in and check certbot validated your domain:
 
 ```shell
 ssh -p 4444 <username>@<droplet_ip_address>
-cd ~/docker
+cd ~/stuff/docker
 
 ## check certbot created a cert folder for your domain
 sudo docker compose exec nginx ls -la /etc/letsencrypt/live
@@ -56,7 +56,7 @@ sudo docker compose restart
 
 ```shell
 ## Force-recreate your deployed Docker containers
-cd ~/docker && sudo docker compose up -d --force-recreate
+cd ~/stuff/docker && sudo docker compose up -d --force-recreate
 ```
 
 ## Destroying what you've made

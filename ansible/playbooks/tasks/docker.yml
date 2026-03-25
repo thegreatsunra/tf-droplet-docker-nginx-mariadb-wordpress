@@ -41,15 +41,15 @@
     group: "{{ ssh_user }}"
     mode: "0755"
   loop:
-    - "/home/{{ ssh_user }}/docker"
-    - "/home/{{ ssh_user }}/docker/nginx"
-    - "/home/{{ ssh_user }}/docker/nginx/conf.d"
-    - "/home/{{ ssh_user }}/docker/nginx/conf.d/modules"
+    - "/home/{{ ssh_user }}/stuff/docker"
+    - "/home/{{ ssh_user }}/stuff/docker/nginx"
+    - "/home/{{ ssh_user }}/stuff/docker/nginx/conf.d"
+    - "/home/{{ ssh_user }}/stuff/docker/nginx/conf.d/modules"
 
 - name: Render docker-compose.yml
   ansible.builtin.template:
     src: docker-compose.yml.j2
-    dest: "/home/{{ ssh_user }}/docker/docker-compose.yml"
+    dest: "/home/{{ ssh_user }}/stuff/docker/docker-compose.yml"
     owner: "{{ ssh_user }}"
     group: "{{ ssh_user }}"
     mode: "0644"
@@ -57,7 +57,7 @@
 - name: Render nginx default.conf
   ansible.builtin.template:
     src: nginx/conf.d/default.conf.j2
-    dest: "/home/{{ ssh_user }}/docker/nginx/conf.d/default.conf"
+    dest: "/home/{{ ssh_user }}/stuff/docker/nginx/conf.d/default.conf"
     owner: "{{ ssh_user }}"
     group: "{{ ssh_user }}"
     mode: "0644"
@@ -65,7 +65,7 @@
 - name: Deploy nginx module configs
   ansible.builtin.copy:
     src: "nginx/conf.d/modules/{{ item }}"
-    dest: "/home/{{ ssh_user }}/docker/nginx/conf.d/modules/{{ item }}"
+    dest: "/home/{{ ssh_user }}/stuff/docker/nginx/conf.d/modules/{{ item }}"
     owner: "{{ ssh_user }}"
     group: "{{ ssh_user }}"
     mode: "0644"
@@ -79,7 +79,7 @@
 - name: Download certbot SSL options
   ansible.builtin.get_url:
     url: https://raw.githubusercontent.com/certbot/certbot/master/certbot-nginx/certbot_nginx/_internal/tls_configs/options-ssl-nginx.conf
-    dest: "/home/{{ ssh_user }}/docker/nginx/conf.d/options-ssl-nginx.conf"
+    dest: "/home/{{ ssh_user }}/stuff/docker/nginx/conf.d/options-ssl-nginx.conf"
     owner: "{{ ssh_user }}"
     group: "{{ ssh_user }}"
     mode: "0644"
@@ -87,12 +87,12 @@
 - name: Deploy docker .env
   ansible.builtin.copy:
     src: docker.env
-    dest: "/home/{{ ssh_user }}/docker/.env"
+    dest: "/home/{{ ssh_user }}/stuff/docker/.env"
     owner: "{{ ssh_user }}"
     group: "{{ ssh_user }}"
     mode: "0600"
 
 - name: Pull Docker images
   ansible.builtin.command:
-    cmd: "docker compose --file /home/{{ ssh_user }}/docker/docker-compose.yml pull"
+    cmd: "docker compose --file /home/{{ ssh_user }}/stuff/docker/docker-compose.yml pull"
   changed_when: true
