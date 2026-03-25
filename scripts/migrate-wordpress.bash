@@ -75,6 +75,17 @@ for site_key in $(yq '.sites | keys | .[]' "$config_abs"); do
 	fi
 
 	if [[ -n "$FROM_HOST" ]]; then
+		webroot_dirs=$(yq ".sites.${site_key}.webroot_dirs // [] | .[]" "$config_abs" | tr '\n' ' ')
+		if [[ -n "$webroot_dirs" ]]; then
+			echo "Migrating webroot dirs from ${FROM_HOST}: $(echo "$webroot_dirs" | tr '\n' ' ')"
+			# shellcheck disable=SC2086
+			ssh -p "$FROM_PORT" "$FROM_HOST" \
+				"${FROM_DOCKER} exec ${container} tar -cC /var/www/html $webroot_dirs" \
+			| ssh -p "$TO_PORT" "${TO_USER}@${TO_HOST}" \
+				"docker exec -i ${container} tar -xC /var/www/html"
+			echo "Webroot dirs migrated."
+		fi
+
 		echo "Migrating uploads from ${FROM_HOST}..."
 		ssh -p "$FROM_PORT" "$FROM_HOST" \
 			"${FROM_DOCKER} exec ${container} tar -cC /var/www/html wp-content/uploads" \

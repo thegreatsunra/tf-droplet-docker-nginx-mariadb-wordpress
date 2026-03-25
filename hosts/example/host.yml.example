@@ -10,3 +10,5 @@ sites:
     multisite: false
     theme_repo: <github_repo_url>
     # additional_content_repo: <github_repo_url>  # optional
+    # webroot_dirs:                                # optional: dirs to copy from old host
+    #   - images
