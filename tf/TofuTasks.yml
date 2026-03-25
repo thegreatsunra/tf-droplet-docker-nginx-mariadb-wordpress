@@ -4,12 +4,12 @@ tasks:
   apply:
     dir: "{{.TASKFILE_DIR}}"
     cmds:
-      - tofu apply
+      - tofu apply {{.CLI_ARGS}}
 
   destroy:
     dir: "{{.TASKFILE_DIR}}"
     cmds:
-      - tofu destroy
+      - tofu destroy {{.CLI_ARGS}}
 
   fmt:
     dir: "{{.TASKFILE_DIR}}"
@@ -19,12 +19,12 @@ tasks:
   init:
     dir: "{{.TASKFILE_DIR}}"
     cmds:
-      - tofu init
+      - tofu init {{.CLI_ARGS}}
 
   plan:
     dir: "{{.TASKFILE_DIR}}"
     cmds:
-      - tofu plan
+      - tofu plan {{.CLI_ARGS}}
 
   providers-lock:
     dir: "{{.TASKFILE_DIR}}"
