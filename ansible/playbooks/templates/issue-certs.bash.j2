@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+DOCKER_DIR="$HOME/stuff/docker"
+STAGING=true
+
+while [[ $# -gt 0 ]]; do
+	case "$1" in
+		--production) STAGING=false; shift ;;
+		*) echo "Unknown argument: $1" >&2; exit 1 ;;
+	esac
+done
+
+CERTBOT_ARGS=(certonly --webroot --agree-tos --no-eff-email)
+
+if $STAGING; then
+	CERTBOT_ARGS+=(--staging)
+else
+	CERTBOT_ARGS+=(--force-renewal)
+fi
+
+{% for site_key, site_domain_name in sites_available.items() %}
+docker compose --file "$DOCKER_DIR/docker-compose.yml" run --rm certbot \
+	"${CERTBOT_ARGS[@]}" \
+	--webroot-path=/var/www/html/{{ site_domain_name }} \
+	--email {{ email_address }} \
+	-d {{ site_domain_name }}
+{% endfor %}

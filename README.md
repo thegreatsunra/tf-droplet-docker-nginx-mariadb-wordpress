@@ -35,22 +35,26 @@ Ansible will install packages, configure UFW, set up the user environment (zsh, 
 
 ### 3. Enable SSL
 
-Once the stack is running, SSH in and check certbot validated your domain:
+SSH in and issue staging certs first to verify the webroot challenge works:
 
 ```shell
 ssh -p 4444 <username>@<droplet_ip_address>
-cd ~/stuff/docker
-
-## check certbot created a cert folder for your domain
-sudo docker compose exec nginx ls -la /etc/letsencrypt/live
-
-## re-run certbot with --force-renewal to get real certs
-sudo docker compose up --force-recreate -d --no-deps certbot
-
-## then comment out the HTTP block and un-comment the HTTPS block in nginx default.conf
-## then restart containers
-sudo docker compose restart
+bash ~/stuff/issue-certs.bash
 ```
+
+If staging succeeds, issue real certs:
+
+```shell
+bash ~/stuff/issue-certs.bash --production
+```
+
+Then uncomment the HTTPS server block in `~/stuff/docker/nginx/conf.d/default.conf` and restart nginx:
+
+```shell
+cd ~/stuff/docker && sudo docker compose restart nginx
+```
+
+Certbot renewal runs automatically every 12 hours via the certbot container.
 
 ## Maintenance
 

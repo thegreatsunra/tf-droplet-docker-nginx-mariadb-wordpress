@@ -37,6 +37,10 @@ server {
 #	ssl_certificate_key /etc/letsencrypt/live/{{ site_domain_name }}/privkey.pem ;
 #	include /etc/nginx/conf.d/options-ssl-nginx.conf ;
 
+	location ^~ /.well-known/acme-challenge/ {
+		root /var/www/html/{{ site_domain_name }} ;
+	}
+
 	## security
 	include     /etc/nginx/conf.d/modules/security.conf ;
 

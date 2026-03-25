@@ -69,27 +69,13 @@ services:
       - app-network
 
   certbot:
-    depends_on:
-      - nginx
     image: certbot/certbot:v5.4.0
     container_name: certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
     volumes:
       - certbot-etc:/etc/letsencrypt
 {% for site_key, site_domain_name in sites_available.items() %}
       - {{ wordpress_prefix }}{{ site_key }}:/var/www/html/{{ site_domain_name }}
-{% endfor %}
-    ## replace `--staging` with `--force-renewal` once you know it works
-    command: |
-{% for site_key, site_domain_name in sites_available.items() %}
-      certonly
-      --webroot
-      --webroot-path=/var/www/html/{{ site_domain_name }}
-      --email {{ email_address }}
-      --agree-tos
-      --no-eff-email
-      --staging
-      # --force-renewal
-      -d {{ site_domain_name }}
 {% endfor %}
 
 volumes:

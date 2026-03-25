@@ -92,6 +92,14 @@
     group: "{{ ssh_user }}"
     mode: "0600"
 
+- name: Deploy issue-certs script
+  ansible.builtin.template:
+    src: issue-certs.bash.j2
+    dest: "/home/{{ ssh_user }}/stuff/issue-certs.bash"
+    owner: "{{ ssh_user }}"
+    group: "{{ ssh_user }}"
+    mode: "0755"
+
 - name: Pull Docker images
   ansible.builtin.command:
     cmd: "docker compose --file /home/{{ ssh_user }}/stuff/docker/docker-compose.yml pull"
