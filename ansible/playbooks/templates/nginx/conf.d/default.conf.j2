@@ -1,51 +1,48 @@
-{% for site_key, site_domain_name in sites_available.items() %}
+{% for site_key, site in sites_available.items() %}
 
-## un-comment the following lines for WordPress multisite
-## reference: http://wordpress.org/extend/plugins/nginx-helper/
-## these map blocks must remain outside a server{} block
-## BEGIN wordpress multisite
-#map $uri $blogname {
-#	~^(?P<blogpath>/[^/]+/)files/(.*)		$blogpath ;
-#}
+## --- {{ site.domain }} ---
 
-#map $blogname $blogid {
-#	default			-999 ;
-#	/				1 ;
-#	/second-blog/	2 ;
-#	/third-blog/	3 ;
-##	etc...
-#}
-## END wordpress multisite
+{% if site.multisite %}
+map $uri $blogname {
+	~^(?P<blogpath>/[^/]+/)files/(.*)	$blogpath ;
+}
 
+map $blogname $blogid {
+	default	-999 ;
+	/	1 ;
+}
+
+{% endif %}
 server {
-	## comment out once SSL is configured
 	listen      80 ;
 	listen      [::]:80 ;
-
-	## un-comment once SSL is configured
-#	listen 443 ssl ;
-#	listen [::]:443 ssl ;
-#	http2 on ;
-
-	server_name {{ site_domain_name }} ;
-	set         $base /var/www/html ;
-	root        $base/{{ site_domain_name }} ;
-
-	## un-comment once SSL is configured
-#	server_tokens off;
-#	ssl_certificate /etc/letsencrypt/live/{{ site_domain_name }}/fullchain.pem ;
-#	ssl_certificate_key /etc/letsencrypt/live/{{ site_domain_name }}/privkey.pem ;
-#	include /etc/nginx/conf.d/options-ssl-nginx.conf ;
+	server_name {{ site.domain }} ;
 
 	location ^~ /.well-known/acme-challenge/ {
-		root /var/www/html/{{ site_domain_name }} ;
+		root /var/www/html/{{ site.domain }} ;
 	}
 
-	## security
-	include     /etc/nginx/conf.d/modules/security.conf ;
+	location / {
+		return 301 https://$host$request_uri ;
+	}
+}
 
-	## logging
-	## NOTE: defining logging here will intercept Docker's built-in logging
+server {
+	listen      443 ssl ;
+	listen      [::]:443 ssl ;
+	http2       on ;
+
+	server_name   {{ site.domain }} ;
+	server_tokens off ;
+	set           $base /var/www/html ;
+	root          $base/{{ site.domain }} ;
+
+	ssl_certificate     /etc/letsencrypt/live/{{ site.domain }}/fullchain.pem ;
+	ssl_certificate_key /etc/letsencrypt/live/{{ site.domain }}/privkey.pem ;
+	include             /etc/nginx/conf.d/options-ssl-nginx.conf ;
+
+	## security
+	include /etc/nginx/conf.d/modules/security.conf ;
 
 	## php and fastcgi
 	include /etc/nginx/conf.d/modules/php.conf ;
@@ -56,8 +53,6 @@ server {
 		fastcgi_pass {{ wordpress_prefix }}{{ site_key }}:9000 ;
 		fastcgi_index index.php ;
 		include fastcgi_params ;
-		## it took me days to finally figure out what value fastcgi_param needed to be
-		## reference: https://stackoverflow.com/questions/53992753/docker-nginx-multiple-domains-multiple-wordpress-on-their-own-directories-in
 		fastcgi_param SCRIPT_FILENAME /var/www/html$fastcgi_script_name ;
 		fastcgi_param PATH_INFO $fastcgi_path_info ;
 	}
@@ -65,22 +60,19 @@ server {
 	## additional config
 	include /etc/nginx/conf.d/modules/general.conf ;
 
-	## wordpress
-	include     /etc/nginx/conf.d/modules/wordpress.conf ;
+{% if site.multisite %}
+	include /etc/nginx/conf.d/modules/wordpress-multisite.conf ;
 
-	## un-comment the following lines for WordPress multisite
-	## BEGIN wordpress multisite
-#	include     /etc/nginx/conf.d/modules/wordpress-multisite.conf ;
-
-	## avoid php readfile()
-#	location ^~ /blogs.dir {
-#		internal ;
-#		alias $base/{{ site_domain_name }}/wp-content/blogs.dir ;
-#		access_log off ;
-#		log_not_found off ;
-#		expires max ;
-#	}
-	## END wordpress multisite
-
+	location ^~ /blogs.dir {
+		internal ;
+		alias $base/{{ site.domain }}/wp-content/blogs.dir ;
+		access_log off ;
+		log_not_found off ;
+		expires max ;
+	}
+{% else %}
+	include /etc/nginx/conf.d/modules/wordpress.conf ;
+{% endif %}
 }
+
 {% endfor %}

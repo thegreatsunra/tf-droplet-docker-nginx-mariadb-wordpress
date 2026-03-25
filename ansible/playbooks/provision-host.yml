@@ -23,3 +23,5 @@
       ansible.builtin.import_tasks: tasks/users.yml
     - name: Docker
       ansible.builtin.import_tasks: tasks/docker.yml
+    - name: WordPress
+      ansible.builtin.import_tasks: tasks/wordpress.yml

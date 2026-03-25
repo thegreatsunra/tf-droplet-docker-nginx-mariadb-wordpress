@@ -1,0 +1,14 @@
+#!/bin/bash
+# Runs once when the MariaDB data directory is first initialized.
+# Passwords in docker.env must not contain single quotes.
+set -eo pipefail
+
+{% for site_key, site in sites_available.items() %}
+mariadb -uroot -p"${MYSQL_ROOT_PASSWORD}" <<EOF
+CREATE DATABASE IF NOT EXISTS \`{{ wordpress_prefix }}{{ database_prefix }}{{ site_key }}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER IF NOT EXISTS '${MYSQL_USER_{{ site_key }}}'@'%' IDENTIFIED BY '${MYSQL_PASSWORD_{{ site_key }}}';
+GRANT ALL PRIVILEGES ON \`{{ wordpress_prefix }}{{ database_prefix }}{{ site_key }}\`.* TO '${MYSQL_USER_{{ site_key }}}'@'%';
+FLUSH PRIVILEGES;
+EOF
+
+{% endfor %}

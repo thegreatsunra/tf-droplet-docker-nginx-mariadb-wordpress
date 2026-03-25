@@ -1,0 +1,99 @@
+---
+- name: Create directory structure
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ ssh_user }}"
+    group: "{{ ssh_user }}"
+    mode: "0755"
+  loop:
+    - "/home/{{ ssh_user }}/stuff/docker"
+    - "/home/{{ ssh_user }}/stuff/docker/mariadb"
+    - "/home/{{ ssh_user }}/stuff/docker/mariadb/initdb.d"
+    - "/home/{{ ssh_user }}/stuff/docker/nginx"
+    - "/home/{{ ssh_user }}/stuff/docker/nginx/conf.d"
+    - "/home/{{ ssh_user }}/stuff/docker/nginx/conf.d/modules"
+
+- name: Render MariaDB init script
+  ansible.builtin.template:
+    src: mariadb-init.sh.j2
+    dest: "/home/{{ ssh_user }}/stuff/docker/mariadb/initdb.d/init-wordpress-databases.sh"
+    owner: "{{ ssh_user }}"
+    group: "{{ ssh_user }}"
+    mode: "0755"
+
+- name: Render docker-compose.yml
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "/home/{{ ssh_user }}/stuff/docker/docker-compose.yml"
+    owner: "{{ ssh_user }}"
+    group: "{{ ssh_user }}"
+    mode: "0644"
+
+- name: Render nginx default.conf
+  ansible.builtin.template:
+    src: nginx/conf.d/default.conf.j2
+    dest: "/home/{{ ssh_user }}/stuff/docker/nginx/conf.d/default.conf"
+    owner: "{{ ssh_user }}"
+    group: "{{ ssh_user }}"
+    mode: "0644"
+
+- name: Deploy nginx module configs
+  ansible.builtin.copy:
+    src: "nginx/conf.d/modules/{{ item }}"
+    dest: "/home/{{ ssh_user }}/stuff/docker/nginx/conf.d/modules/{{ item }}"
+    owner: "{{ ssh_user }}"
+    group: "{{ ssh_user }}"
+    mode: "0644"
+  loop:
+    - general.conf
+    - php.conf
+    - security.conf
+    - wordpress.conf
+    - wordpress-multisite.conf
+
+- name: Download certbot SSL options
+  ansible.builtin.get_url:
+    url: https://raw.githubusercontent.com/certbot/certbot/master/certbot-nginx/certbot_nginx/_internal/tls_configs/options-ssl-nginx.conf
+    dest: "/home/{{ ssh_user }}/stuff/docker/nginx/conf.d/options-ssl-nginx.conf"
+    owner: "{{ ssh_user }}"
+    group: "{{ ssh_user }}"
+    mode: "0644"
+
+- name: Deploy docker .env
+  ansible.builtin.copy:
+    src: docker.env
+    dest: "/home/{{ ssh_user }}/stuff/docker/.env"
+    owner: "{{ ssh_user }}"
+    group: "{{ ssh_user }}"
+    mode: "0600"
+
+- name: Deploy issue-certs script
+  ansible.builtin.template:
+    src: issue-certs.bash.j2
+    dest: "/home/{{ ssh_user }}/stuff/issue-certs.bash"
+    owner: "{{ ssh_user }}"
+    group: "{{ ssh_user }}"
+    mode: "0755"
+
+- name: Pull Docker images
+  ansible.builtin.command:
+    cmd: "docker compose --file /home/{{ ssh_user }}/stuff/docker/docker-compose.yml pull"
+  changed_when: true
+
+- name: Generate placeholder SSL cert
+  ansible.builtin.shell: |
+    docker run --rm \
+      -v certbot-etc:/etc/letsencrypt \
+      --entrypoint sh \
+      certbot/certbot:v5.4.0 \
+      -c "[ -f /etc/letsencrypt/live/{{ item.value.domain }}/fullchain.pem ] || \
+          (mkdir -p /etc/letsencrypt/live/{{ item.value.domain }} && \
+           openssl req -x509 -nodes -newkey rsa:2048 -days 1 \
+           -keyout /etc/letsencrypt/live/{{ item.value.domain }}/privkey.pem \
+           -out /etc/letsencrypt/live/{{ item.value.domain }}/fullchain.pem \
+           -subj /CN={{ item.value.domain }})"
+  loop: "{{ sites_available | dict2items }}"
+  loop_control:
+    label: "{{ item.value.domain }}"
+  changed_when: true

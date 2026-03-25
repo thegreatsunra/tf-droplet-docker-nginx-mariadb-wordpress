@@ -11,18 +11,37 @@ while [[ $# -gt 0 ]]; do
 	esac
 done
 
+if ! docker info > /dev/null 2>&1; then
+	echo "Error: cannot connect to Docker. You may need to log out and back in for docker group membership to take effect." >&2
+	exit 1
+fi
+
+if ! docker compose --file "$DOCKER_DIR/docker-compose.yml" ps --status running --quiet nginx | grep -q .; then
+	echo "Error: nginx is not running. Start the stack with 'docker compose up -d' before issuing certs." >&2
+	exit 1
+fi
+
 CERTBOT_ARGS=(certonly --webroot --agree-tos --no-eff-email)
 
 if $STAGING; then
-	CERTBOT_ARGS+=(--staging)
+	echo "Issuing staging certificates (not trusted by browsers)."
+	echo "Run with --production once staging succeeds to get real certs."
+	echo ""
+	CERTBOT_ARGS+=(--staging --keep-until-expiring)
 else
 	CERTBOT_ARGS+=(--force-renewal)
 fi
 
-{% for site_key, site_domain_name in sites_available.items() %}
-docker compose --file "$DOCKER_DIR/docker-compose.yml" run --rm certbot \
+{% for site_key, site in sites_available.items() %}
+echo "--- {{ site.domain }} ---"
+docker compose --file "$DOCKER_DIR/docker-compose.yml" run --rm --entrypoint certbot certbot \
 	"${CERTBOT_ARGS[@]}" \
-	--webroot-path=/var/www/html/{{ site_domain_name }} \
+	--webroot-path=/var/www/html/{{ site.domain }} \
 	--email {{ email_address }} \
-	-d {{ site_domain_name }}
+	-d {{ site.domain }}
+echo ""
 {% endfor %}
+
+echo "Reloading nginx..."
+docker compose --file "$DOCKER_DIR/docker-compose.yml" exec nginx nginx -s reload
+echo "Done."
