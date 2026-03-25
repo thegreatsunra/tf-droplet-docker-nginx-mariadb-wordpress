@@ -1,0 +1,26 @@
+#cloud-config
+
+## cloudinit logs are here:
+## /var/log/cloud-init.log - The actual process logs
+## /var/log/cloud-init-output.log - Any output produced
+
+package_upgrade: true
+packages:
+  - curl
+  - git
+
+users:
+  - name: ${username}
+    gecos: ${user_full_name}
+    ssh-authorized-keys:
+      - ${public_ssh_key}
+    sudo: ['ALL=(ALL) NOPASSWD:ALL']
+    groups: sudo
+    shell: /bin/bash
+
+power_state:
+  mode: reboot
+  delay: "now"
+  message: "Goodbye!"
+  timeout: 30
+  condition: True

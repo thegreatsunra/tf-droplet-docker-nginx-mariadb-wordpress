@@ -5,7 +5,7 @@ version: "3"
 
 services:
   mariadb:
-    image: mariadb:10.11.2
+    image: mariadb:12.2.2
     container_name: mariadb
     restart: unless-stopped
     env_file: .env
@@ -23,21 +23,21 @@ services:
     networks:
       - app-network
 
-%{ for site_key, site_domain_name in sites_available ~}
-  ${wordpress_prefix}${site_key}:
+{% for site_key, site_domain_name in sites_available.items() %}
+  {{ wordpress_prefix }}{{ site_key }}:
     depends_on:
       - mariadb
-    image: wordpress:6.2.0-php8.2-fpm
-    container_name: ${wordpress_prefix}${site_key}
+    image: wordpress:6.9.4-php8.5-fpm
+    container_name: {{ wordpress_prefix }}{{ site_key }}
     restart: unless-stopped
     env_file: .env
     environment:
       - WORDPRESS_DB_HOST=mariadb:3306
-      - WORDPRESS_DB_NAME=${wordpress_prefix}${database_prefix}${site_key}
-      - WORDPRESS_DB_PASSWORD=$MYSQL_PASSWORD_${site_key}
-      - WORDPRESS_DB_USER=$MYSQL_USER_${site_key}
+      - WORDPRESS_DB_NAME={{ wordpress_prefix }}{{ database_prefix }}{{ site_key }}
+      - WORDPRESS_DB_PASSWORD=$MYSQL_PASSWORD_{{ site_key }}
+      - WORDPRESS_DB_USER=$MYSQL_USER_{{ site_key }}
     volumes:
-      - ${wordpress_prefix}${site_key}:/var/www/html
+      - {{ wordpress_prefix }}{{ site_key }}:/var/www/html
     deploy:
       resources:
         limits:
@@ -47,13 +47,13 @@ services:
     networks:
       - app-network
 
-%{ endfor ~}
+{% endfor %}
   nginx:
     depends_on:
-%{ for site_key, site_domain_name in sites_available ~}
-      - ${wordpress_prefix}${site_key}
-%{ endfor ~}
-    image: nginx:1.23.4
+{% for site_key, site_domain_name in sites_available.items() %}
+      - {{ wordpress_prefix }}{{ site_key }}
+{% endfor %}
+    image: nginx:1.28.3
     container_name: nginx
     restart: unless-stopped
     ports:
@@ -62,9 +62,9 @@ services:
     volumes:
       - certbot-etc:/etc/letsencrypt
       - nginx-conf:/etc/nginx/conf.d
-%{ for site_key, site_domain_name in sites_available ~}
-      - ${wordpress_prefix}${site_key}:/var/www/html/${site_domain_name}
-%{ endfor ~}
+{% for site_key, site_domain_name in sites_available.items() %}
+      - {{ wordpress_prefix }}{{ site_key }}:/var/www/html/{{ site_domain_name }}
+{% endfor %}
     deploy:
       resources:
         limits:
@@ -77,34 +77,34 @@ services:
   certbot:
     depends_on:
       - nginx
-    image: certbot/certbot:v2.5.0
+    image: certbot/certbot:v5.4.0
     container_name: certbot
     volumes:
       - certbot-etc:/etc/letsencrypt
-%{ for site_key, site_domain_name in sites_available ~}
-      - ${wordpress_prefix}${site_key}:/var/www/html/${site_domain_name}
-%{ endfor ~}
+{% for site_key, site_domain_name in sites_available.items() %}
+      - {{ wordpress_prefix }}{{ site_key }}:/var/www/html/{{ site_domain_name }}
+{% endfor %}
     ## replace `--staging` with `--force-renewal` once you know it works
     command: |
-%{ for site_key, site_domain_name in sites_available ~}
+{% for site_key, site_domain_name in sites_available.items() %}
       certonly
       --webroot
-      --webroot-path=/var/www/html/${site_domain_name}
-      --email ${email_address}
+      --webroot-path=/var/www/html/{{ site_domain_name }}
+      --email {{ email_address }}
       --agree-tos
       --no-eff-email
       --staging
       # --force-renewal
-      -d ${site_domain_name}
-%{ endfor ~}
+      -d {{ site_domain_name }}
+{% endfor %}
 
 volumes:
   certbot-etc:
   mariadb:
   nginx-conf:
-%{ for site_key, site_domain_name in sites_available ~}
-  ${wordpress_prefix}${site_key}:
-%{ endfor ~}
+{% for site_key, site_domain_name in sites_available.items() %}
+  {{ wordpress_prefix }}{{ site_key }}:
+{% endfor %}
 
 networks:
   app-network:

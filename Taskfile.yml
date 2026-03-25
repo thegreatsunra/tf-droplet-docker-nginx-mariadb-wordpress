@@ -1,5 +1,11 @@
 version: "3"
 
+dotenv: ['./tf/.env']
+
+includes:
+  tf:
+    taskfile: ./tf/TofuTasks.yml
+
 tasks:
   test:
     desc: Run all tests (Ansible)

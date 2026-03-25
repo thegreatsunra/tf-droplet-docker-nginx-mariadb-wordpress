@@ -5,20 +5,17 @@
 ## Getting started
 
 1. Generate your DigitalOcean and Cloudflare API tokens
-1. Create `deploy/.env` based on `deploy/.env.example` and fill in values
-1. Create `deploy/dns.json` and `deploy/sites-available.json` from their `.example` counterparts
+1. Create `tf/.env` based on `tf/.env.example` and fill in values
+1. Create `tf/dns.json` and `tf/sites-available.json` from their `.example` counterparts
 1. Create `ansible/hosts/<project>/host.yml` based on `ansible/hosts/kafka/host.yml.example`
 
-Variables are passed to OpenTofu via `TF_VAR_*` environment variables. The Taskfile loads `deploy/.env` automatically — always use `task` rather than invoking `tofu` directly.
+Variables are passed to OpenTofu via `TF_VAR_*` environment variables. The root Taskfile loads `tf/.env` automatically — always use `task` rather than invoking `tofu` directly.
 
 ### 1. Provision infrastructure
 
 ```shell
-cd deploy
-task tf-init tf-plan tf-apply
+task tf:init tf:plan tf:apply
 ```
-
-This creates the droplet and DNS records, and writes rendered config files to `ansible/playbooks/files/rendered/` for Ansible to deploy.
 
 Wait for cloud-init to finish and the droplet to reboot, then confirm SSH is available:
 
@@ -30,10 +27,8 @@ ssh <username>@<droplet_ip_address>
 
 Copy `ansible/hosts/kafka/host.yml.example` to `ansible/hosts/<project>/host.yml` and fill in the droplet IP and username.
 
-Then run Ansible (from `deploy/`, where the Taskfile and `.env` live):
-
 ```shell
-task ansible-provision CONFIG=../ansible/hosts/<project>/host.yml
+task tf:ansible-provision CONFIG=ansible/hosts/<project>/host.yml
 ```
 
 Ansible will install packages, harden SSH (moving it to port 4444), configure UFW, install Docker, and deploy the WordPress stack.
@@ -69,8 +64,7 @@ cd ~/docker && sudo docker compose up -d --force-recreate
 ## Destroying what you've made
 
 ```shell
-cd deploy
-task tf-destroy
+task tf:destroy
 ```
 
 ## License

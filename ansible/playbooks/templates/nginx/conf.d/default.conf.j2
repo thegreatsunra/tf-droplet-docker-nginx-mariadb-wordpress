@@ -1,4 +1,4 @@
-%{ for site_key, site_domain_name in sites_available ~}
+{% for site_key, site_domain_name in sites_available.items() %}
 
 ## un-comment the following lines for WordPress multisite
 ## reference: http://wordpress.org/extend/plugins/nginx-helper/
@@ -26,19 +26,19 @@ server {
 #	listen 443 ssl http2 ;
 #	listen [::]:443 ssl http2 ;
 
-	server_name ${site_domain_name} ;
+	server_name {{ site_domain_name }} ;
 	set         $base /var/www/html ;
-	root        $base/${site_domain_name} ;
+	root        $base/{{ site_domain_name }} ;
 
 	## un-comment once SSL is configured
 #	server_tokens off;
-#	ssl_certificate /etc/letsencrypt/live/${site_domain_name}/fullchain.pem ;
-#	ssl_certificate_key /etc/letsencrypt/live/${site_domain_name}/privkey.pem ;
+#	ssl_certificate /etc/letsencrypt/live/{{ site_domain_name }}/fullchain.pem ;
+#	ssl_certificate_key /etc/letsencrypt/live/{{ site_domain_name }}/privkey.pem ;
 #	include /etc/nginx/conf.d/options-ssl-nginx.conf ;
 
 	## security
 	include     /etc/nginx/conf.d/modules/security.conf ;
- 
+
 	## logging
 	## NOTE: defining logging here will intercept Docker's built-in logging
 
@@ -48,7 +48,7 @@ server {
 	location ~ \.php$ {
 		try_files $uri =404 ;
 		fastcgi_split_path_info ^(.+\.php)(/.+)$ ;
-		fastcgi_pass ${wordpress_prefix}${site_key}:9000 ;
+		fastcgi_pass {{ wordpress_prefix }}{{ site_key }}:9000 ;
 		fastcgi_index index.php ;
 		include fastcgi_params ;
 		## it took me days to finally figure out what value fastcgi_param needed to be
@@ -70,7 +70,7 @@ server {
 	## avoid php readfile()
 #	location ^~ /blogs.dir {
 #		internal ;
-#		alias $base/${site_domain_name}/wp-content/blogs.dir ;
+#		alias $base/{{ site_domain_name }}/wp-content/blogs.dir ;
 #		access_log off ;
 #		log_not_found off ;
 #		expires max ;
@@ -78,4 +78,4 @@ server {
 	## END wordpress multisite
 
 }
-%{ endfor ~}
+{% endfor %}

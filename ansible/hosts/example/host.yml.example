@@ -1,0 +1,8 @@
+host: <droplet_ip>
+port: 22  # Change to 4444 after first Ansible run (SSH task changes the port)
+user: <ubuntu>
+playbook: provision-host.yml
+vars:
+  droplet_hostname: <hostname>.thegreatsunra.com
+  email_address: <email>
+  timezone: America/New_York
