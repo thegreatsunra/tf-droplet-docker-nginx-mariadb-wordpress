@@ -55,7 +55,7 @@ services:
       - "443:443"
     volumes:
       - certbot-etc:/etc/letsencrypt
-      - nginx-conf:/etc/nginx/conf.d
+      - /home/{{ ssh_user }}/docker/nginx/conf.d:/etc/nginx/conf.d:ro
 {% for site_key, site_domain_name in sites_available.items() %}
       - {{ wordpress_prefix }}{{ site_key }}:/var/www/html/{{ site_domain_name }}
 {% endfor %}
@@ -95,7 +95,6 @@ services:
 volumes:
   certbot-etc:
   mariadb:
-  nginx-conf:
 {% for site_key, site_domain_name in sites_available.items() %}
   {{ wordpress_prefix }}{{ site_key }}:
 {% endfor %}
