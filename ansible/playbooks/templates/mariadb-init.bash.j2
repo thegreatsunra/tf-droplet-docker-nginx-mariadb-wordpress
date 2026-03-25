@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Runs once when the MariaDB data directory is first initialized.
 # Passwords in docker.env must not contain single quotes.
-set -eo pipefail
+set -euo pipefail
 
 {% for site_key, site in sites_available.items() %}
 mariadb -uroot -p"${MYSQL_ROOT_PASSWORD}" <<EOF
