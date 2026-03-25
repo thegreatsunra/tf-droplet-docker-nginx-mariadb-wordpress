@@ -1,3 +1,7 @@
+variable "cloudflare_record_allow_overwrite" {
+  type    = bool
+  default = false
+}
 variable "cloudflare_record_proxied" {
   type    = bool
   default = false
@@ -53,11 +57,16 @@ variable "public_ssh_key" {
 
 variable "resource_tags" {
   type    = list(string)
-  default = ["droplet"]
+  default = []
 }
 
 variable "user_full_name" {
   type = string
+}
+
+variable "timezone" {
+  type    = string
+  default = "America/New_York"
 }
 
 variable "username" {

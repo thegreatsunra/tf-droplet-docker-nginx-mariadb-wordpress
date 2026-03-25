@@ -10,9 +10,10 @@ data "cloudflare_zone" "zone" {
 resource "cloudflare_record" "record" {
   for_each = local.container_loop.dns
 
+  allow_overwrite = var.cloudflare_record_allow_overwrite
+  content = digitalocean_droplet.droplet.ipv4_address
   name    = each.key
   proxied = var.cloudflare_record_proxied
   type    = "A"
-  content = digitalocean_droplet.droplet.ipv4_address
   zone_id = data.cloudflare_zone.zone[each.key].id
 }
