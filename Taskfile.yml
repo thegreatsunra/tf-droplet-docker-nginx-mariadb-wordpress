@@ -8,9 +8,11 @@ includes:
 
 tasks:
   test:
-    desc: Run all tests (Ansible)
+    desc: Run all tests (Ansible, Terraform)
     cmds:
       - task: test:ansible
+      - task: tf:init
+      - task: tf:validate
 
   test:ansible:
     desc: Run ansible-lint on playbooks
@@ -21,10 +23,11 @@ tasks:
   lint:
     desc: Run pre-commit hooks on all files (auto-fixes where possible)
     cmds:
+      - task: tf:fmt
       - pre-commit run --all-files
 
   ci:
     desc: Run tests and linting in Docker
     cmds:
-      - docker build -t droplet-wordpress .
-      - docker run --rm droplet-wordpress
+      - docker build -t droplet .
+      - docker run --rm droplet

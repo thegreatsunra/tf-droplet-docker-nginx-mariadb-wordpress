@@ -1,18 +1,26 @@
-FROM python:3.14-slim
+FROM debian:bookworm-slim
 
 RUN apt-get update && apt-get install -y \
     shellcheck \
     curl \
     git \
+    gnupg \
+    python3 \
+    python3-pip \
+    unzip \
     && rm -rf /var/lib/apt/lists/*
+
+# Install OpenTofu
+RUN curl --proto '=https' --tlsv1.2 -fsSL https://get.opentofu.org/install-opentofu.sh | \
+    sh -s -- --install-method standalone --opentofu-version 1.11.5
 
 # Install Go Task
 RUN sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b /usr/local/bin
 
 # Install Ansible, ansible-lint, and pre-commit
 COPY ansible/requirements.txt /tmp/requirements.txt
-RUN pip install --no-cache-dir -r /tmp/requirements.txt && \
-    pip install --no-cache-dir pre-commit
+RUN pip install --no-cache-dir --break-system-packages -r /tmp/requirements.txt && \
+    pip install --no-cache-dir --break-system-packages pre-commit
 
 WORKDIR /project
 
