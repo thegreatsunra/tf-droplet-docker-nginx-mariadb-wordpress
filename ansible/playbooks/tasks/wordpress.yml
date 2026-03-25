@@ -97,3 +97,8 @@
   loop_control:
     label: "{{ item.value.domain }}"
   changed_when: true
+
+- name: Start Docker stack
+  ansible.builtin.command:
+    cmd: "docker compose --file /home/{{ ssh_user }}/stuff/docker/docker-compose.yml up -d"
+  changed_when: true

@@ -5,11 +5,10 @@
 ## Getting started
 
 1. Generate your DigitalOcean and Cloudflare API tokens
-1. Create `tf/.env` based on `tf/.env.example` and fill in values
+1. Create `tf/.env` from `tf/.env.example` and fill in values
 1. Create `tf/dns.json` from `tf/dns.json.example`
-1. Create `ansible/sites-available.json` from `ansible/sites-available.json.example`
-1. Create `ansible/hosts/<project>/host.yml` based on `ansible/hosts/example/host.yml.example`
-1. Create `ansible/playbooks/files/docker.env` based on `ansible/playbooks/files/docker.env.example`
+1. Create `hosts/<project>/host.yml` from `hosts/example/host.yml.example`
+1. Create `ansible/playbooks/files/docker.env` from `ansible/playbooks/files/docker.env.example`
 
 Variables are passed to OpenTofu via `TF_VAR_*` environment variables. The root Taskfile loads `tf/.env` automatically — always use `task` rather than invoking `tofu` directly.
 
@@ -28,39 +27,42 @@ ssh -p 4444 <username>@<droplet_ip_address>
 ### 2. Provision the server
 
 ```shell
-bash ansible/run-playbook.bash --config ansible/hosts/<project>/host.yml
+ansible/run-playbook.bash --config hosts/<project>/host.yml
 ```
 
-Ansible will install packages, configure UFW, set up the user environment (zsh, Oh My Zsh, Atuin), install Docker, and deploy the WordPress stack.
+Ansible will install packages, configure UFW, set up the user environment (zsh, Oh My Zsh, Atuin), install Docker, and deploy the WordPress stack. The stack starts automatically with self-signed placeholder certs.
 
 ### 3. Enable SSL
 
-SSH in and issue staging certs first to verify the webroot challenge works:
+SSH in and issue staging certs first to verify the ACME challenge works:
 
 ```shell
 ssh -p 4444 <username>@<droplet_ip_address>
-bash ~/stuff/issue-certs.bash
+~/stuff/issue-certs.bash
 ```
 
 If staging succeeds, issue real certs:
 
 ```shell
-bash ~/stuff/issue-certs.bash --production
-```
-
-Then uncomment the HTTPS server block in `~/stuff/docker/nginx/conf.d/default.conf` and restart nginx:
-
-```shell
-cd ~/stuff/docker && sudo docker compose restart nginx
+~/stuff/issue-certs.bash --production
 ```
 
 Certbot renewal runs automatically every 12 hours via the certbot container.
+
+### 4. Migrate from an existing host (optional)
+
+```shell
+scripts/migrate-databases.bash --config hosts/<project>/host.yml --from <user@old-host> --from-port <port>
+scripts/migrate-wordpress.bash --config hosts/<project>/host.yml --from <user@old-host> --from-port <port>
+```
+
+`migrate-databases.bash` dumps and restores each MariaDB database. `migrate-wordpress.bash` deploys themes and additional content from GitHub, then migrates `wp-content/uploads/` and any `webroot_dirs` defined in `host.yml` via tar pipe between hosts.
 
 ## Maintenance
 
 ```shell
 ## Force-recreate your deployed Docker containers
-cd ~/stuff/docker && sudo docker compose up -d --force-recreate
+cd ~/stuff/docker && docker compose up -d --force-recreate
 ```
 
 ## Destroying what you've made

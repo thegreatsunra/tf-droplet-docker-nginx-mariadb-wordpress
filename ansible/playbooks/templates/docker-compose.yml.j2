@@ -27,13 +27,12 @@ services:
     restart: unless-stopped
     env_file: .env
     environment:
-      - WORDPRESS_DB_HOST=mariadb:3306
-      - WORDPRESS_DB_NAME={{ wordpress_prefix }}{{ database_prefix }}{{ site_key }}
-      - WORDPRESS_DB_PASSWORD=$MYSQL_PASSWORD_{{ site_key }}
-      - WORDPRESS_DB_USER=$MYSQL_USER_{{ site_key }}
+      WORDPRESS_DB_HOST: mariadb:3306
+      WORDPRESS_DB_NAME: {{ wordpress_prefix }}{{ database_prefix }}{{ site_key }}
+      WORDPRESS_DB_PASSWORD: $MYSQL_PASSWORD_{{ site_key }}
+      WORDPRESS_DB_USER: $MYSQL_USER_{{ site_key }}
 {% if site.multisite %}
-      - |
-        WORDPRESS_CONFIG_EXTRA=
+      WORDPRESS_CONFIG_EXTRA: |
         define('WP_ALLOW_MULTISITE', true);
         define('MULTISITE', true);
         define('SUBDOMAIN_INSTALL', false);
