@@ -1,5 +1,5 @@
 ## each.key is the full domain name, with subdomain if applicable
-## each.value is the zone, without zubdomain
+## each.value is the zone, without subdomain
 ## this way the keys are always unique, even if they share the same domain
 data "cloudflare_zone" "zone" {
   for_each = local.dns
