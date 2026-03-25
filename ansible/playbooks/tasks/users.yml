@@ -1,4 +1,48 @@
 ---
+- name: Configure passwordless sudo
+  ansible.builtin.lineinfile:
+    path: /etc/sudoers.d/{{ ssh_user }}
+    line: "{{ ssh_user }} ALL=(ALL:ALL) NOPASSWD:ALL"
+    create: true
+    mode: '0440'
+    owner: root
+    group: root
+    validate: visudo -cf %s
+
+- name: Disable Ubuntu motd ads
+  ansible.builtin.lineinfile:
+    path: /etc/default/motd-news
+    regexp: '^ENABLED='
+    line: 'ENABLED=0'
+
+- name: Disable systemd-motd timer
+  ansible.builtin.systemd:
+    name: motd-news
+    state: stopped
+    enabled: false
+  failed_when: false
+
+- name: Disable help text in motd
+  ansible.builtin.file:
+    path: /etc/update-motd.d/10-help-text
+    mode: '0644'
+  failed_when: false
+
+- name: Filter ESM ads from updates motd
+  ansible.builtin.copy:
+    dest: /etc/update-motd.d/90-updates-available
+    mode: '0755'
+    content: |
+      #!/bin/sh
+      /usr/lib/update-notifier/apt-check --human-readable 2>&1 \
+        | grep -v -E "ESM|ubuntu\.com|pro status|Expanded Security Maintenance"
+
+- name: Disable ESM motd
+  ansible.builtin.file:
+    path: /etc/update-motd.d/91-contract-ua-esm-status
+    mode: '0644'
+  failed_when: false
+
 - name: Check if Oh My Zsh is installed
   ansible.builtin.stat:
     path: "/home/{{ ssh_user }}/.oh-my-zsh"
@@ -19,6 +63,12 @@
     owner: "{{ ssh_user }}"
     group: "{{ ssh_user }}"
     mode: '0644'
+  become: false
+
+- name: Remove zsh auto-update script
+  ansible.builtin.file:
+    path: "/home/{{ ssh_user }}/.oh-my-zsh/custom/auto-update.zsh"
+    state: absent
   become: false
 
 - name: Set Oh My Zsh update mode to auto

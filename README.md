@@ -19,7 +19,7 @@ Variables are passed to OpenTofu via `TF_VAR_*` environment variables. The root 
 task tf:init tf:plan tf:apply
 ```
 
-cloud-init will upgrade packages, install dependencies, harden SSH (port 4444), and configure UFW. Wait for it to finish and the droplet to reboot, then confirm SSH is available:
+cloud-init will upgrade packages, harden SSH (port 4444), and reboot. Wait for it to finish, then confirm SSH is available:
 
 ```shell
 ssh -p 4444 <username>@<droplet_ip_address>
@@ -31,7 +31,7 @@ ssh -p 4444 <username>@<droplet_ip_address>
 bash ansible/run-playbook.bash --config ansible/hosts/<project>/host.yml
 ```
 
-Ansible will install Docker and deploy the WordPress stack.
+Ansible will install packages, configure UFW, set up the user environment (zsh, Oh My Zsh, Atuin), install Docker, and deploy the WordPress stack.
 
 ### 3. Enable SSL
 

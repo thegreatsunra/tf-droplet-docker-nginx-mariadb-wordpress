@@ -15,8 +15,10 @@
         ssh_user: "{{ ansible_user }}"
 
   tasks:
-    - name: System
-      ansible.builtin.import_tasks: tasks/system.yml
+    - name: Packages
+      ansible.builtin.import_tasks: tasks/packages.yml
+    - name: Firewall
+      ansible.builtin.import_tasks: tasks/firewall.yml
     - name: Users
       ansible.builtin.import_tasks: tasks/users.yml
     - name: Docker

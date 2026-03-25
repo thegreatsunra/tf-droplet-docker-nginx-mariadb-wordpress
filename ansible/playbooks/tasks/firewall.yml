@@ -1,0 +1,40 @@
+---
+- name: Configure UFW default deny incoming
+  ansible.builtin.command:
+    cmd: ufw default deny incoming
+  changed_when: true
+
+- name: Configure UFW default allow outgoing
+  ansible.builtin.command:
+    cmd: ufw default allow outgoing
+  changed_when: true
+
+- name: Configure UFW deny default SSH port
+  ansible.builtin.command:
+    cmd: ufw deny 22/tcp
+  changed_when: true
+
+- name: Configure UFW allow SSH on port 4444
+  ansible.builtin.command:
+    cmd: ufw allow 4444/tcp
+  changed_when: true
+
+- name: Configure UFW allow HTTP
+  ansible.builtin.command:
+    cmd: ufw allow 80/tcp
+  changed_when: true
+
+- name: Configure UFW allow HTTPS
+  ansible.builtin.command:
+    cmd: ufw allow 443/tcp
+  changed_when: true
+
+- name: Enable UFW logging
+  ansible.builtin.command:
+    cmd: ufw logging on
+  changed_when: true
+
+- name: Enable UFW
+  ansible.builtin.command:
+    cmd: ufw --force enable
+  changed_when: true

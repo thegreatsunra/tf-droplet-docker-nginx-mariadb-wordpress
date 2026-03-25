@@ -6,14 +6,8 @@
 
 package_upgrade: true
 packages:
-  - auditd
   - curl
-  - fail2ban
   - git
-  - gnupg
-  - ufw
-  - unattended-upgrades
-  - zsh
 
 timezone: ${timezone}
 
@@ -47,24 +41,9 @@ write_files:
       Compression no
       AllowUsers ${username}
 
-  - path: /etc/apt/apt.conf.d/20auto-upgrades
-    content: |
-      APT::Periodic::Update-Package-Lists "1";
-      APT::Periodic::Unattended-Upgrade "1";
-
 runcmd:
   - systemctl restart ssh
-  - ufw deny ssh
-  - ufw allow 4444/tcp
-  - ufw allow http
-  - ufw allow https
-  - ufw logging on
-  - ufw --force enable
   - chattr +i /etc/hostname
-  - "sed -i '/$${distro_codename}-updates/s|^//[[:space:]]*||' /etc/apt/apt.conf.d/50unattended-upgrades"
-  - systemctl enable --now auditd
-  - systemctl enable --now unattended-upgrades
-  - systemctl enable --now fail2ban
 
 power_state:
   mode: reboot
