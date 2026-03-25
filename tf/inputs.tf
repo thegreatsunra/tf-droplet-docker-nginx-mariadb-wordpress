@@ -43,10 +43,6 @@ variable "droplet_size" {
   default = "s-1vcpu-1gb"
 }
 
-variable "email_address" {
-  type = string
-}
-
 variable "project" {
   type = string
 }

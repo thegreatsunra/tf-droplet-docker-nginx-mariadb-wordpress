@@ -2,13 +2,13 @@
 ## each.value is the zone, without zubdomain
 ## this way the keys are always unique, even if they share the same domain
 data "cloudflare_zone" "zone" {
-  for_each = local.container_loop.dns
+  for_each = local.dns
 
   name = each.value
 }
 
 resource "cloudflare_record" "record" {
-  for_each = local.container_loop.dns
+  for_each = local.dns
 
   allow_overwrite = var.cloudflare_record_allow_overwrite
   content = digitalocean_droplet.droplet.ipv4_address
