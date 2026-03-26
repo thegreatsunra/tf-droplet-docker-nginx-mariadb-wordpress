@@ -1,3 +1,16 @@
+data "cloudflare_zone" "droplet_zone" {
+  name = local.droplet_hostname_zone
+}
+
+resource "cloudflare_record" "droplet_record" {
+  allow_overwrite = var.cloudflare_record_allow_overwrite
+  content         = digitalocean_droplet.droplet.ipv4_address
+  name            = var.droplet_hostname
+  proxied         = var.cloudflare_record_proxied
+  type            = "A"
+  zone_id         = data.cloudflare_zone.droplet_zone.id
+}
+
 ## each.key is the full domain name, with subdomain if applicable
 ## each.value is the zone, without subdomain
 ## this way the keys are always unique, even if they share the same domain
