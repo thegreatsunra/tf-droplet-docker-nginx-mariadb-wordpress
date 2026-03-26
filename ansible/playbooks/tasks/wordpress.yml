@@ -84,10 +84,8 @@
 
 - name: Generate placeholder SSL cert
   ansible.builtin.shell: |
-    docker run --rm \
-      -v certbot-etc:/etc/letsencrypt \
-      --entrypoint sh \
-      certbot/certbot:v5.4.0 \
+    docker compose --file /home/{{ ssh_user }}/stuff/docker/docker-compose.yml \
+      run --rm --no-deps --entrypoint sh certbot \
       -c "[ -f /etc/letsencrypt/live/{{ item.value.domain }}/fullchain.pem ] || \
           (mkdir -p /etc/letsencrypt/live/{{ item.value.domain }} && \
            openssl req -x509 -nodes -newkey rsa:2048 -days 1 \
