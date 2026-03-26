@@ -90,6 +90,6 @@ terraform.rc
 .env
 docker.env
 docs/
-hosts/*/
-!hosts/example/
+hosts/*.yml
+!hosts/hostname.yml.example
 tf/dns.json
