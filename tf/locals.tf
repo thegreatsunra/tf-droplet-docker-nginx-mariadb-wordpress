@@ -1,6 +1,10 @@
 locals {
 
-  dns = jsondecode(file("./dns.json"))
+  dns = {
+    for domain in yamldecode(file("./dns.yml")).sites :
+    domain => length(split(".", domain)) > 2 ? join(".", slice(split(".", domain), 1, length(split(".", domain)))) : domain
+  }
+
   droplet_hostname_zone = length(split(".", var.droplet_hostname)) > 2 ? join(".", slice(split(".", var.droplet_hostname), 1, length(split(".", var.droplet_hostname)))) : var.droplet_hostname
 
   user_data_vars = {

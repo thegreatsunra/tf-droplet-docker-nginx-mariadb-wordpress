@@ -6,7 +6,7 @@
 
 1. Generate your DigitalOcean and Cloudflare API tokens
 1. Create `tf/.env` from `tf/.env.example` and fill in values
-1. Create `tf/dns.json` from `tf/dns.json.example`
+1. Create `tf/dns.yml` from `tf/dns.yml.example`
 1. Create `hosts/<hostname>.yml` from `hosts/hostname.yml.example`
 1. Create `ansible/playbooks/files/docker.env` from `ansible/playbooks/files/docker.env.example`
 

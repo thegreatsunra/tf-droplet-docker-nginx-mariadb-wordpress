@@ -92,4 +92,4 @@ docker.env
 docs/
 hosts/*.yml
 !hosts/hostname.yml.example
-tf/dns.json
+tf/dns.yml
