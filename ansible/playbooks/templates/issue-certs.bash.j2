@@ -27,7 +27,7 @@ if $STAGING; then
 	echo "Issuing staging certificates (not trusted by browsers)."
 	echo "Run with --production once staging succeeds to get real certs."
 	echo ""
-	CERTBOT_ARGS+=(--staging --keep-until-expiring)
+	CERTBOT_ARGS+=(--staging --force-renewal)
 else
 	CERTBOT_ARGS+=(--force-renewal)
 fi
